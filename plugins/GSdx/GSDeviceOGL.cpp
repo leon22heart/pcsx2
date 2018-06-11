@@ -1747,13 +1747,29 @@ void GSDeviceOGL::OMSetBlendState(uint8 blend_index, uint8 blend_factor, bool is
 
 		if (GLState::eq_RGB != b.op) {
 			GLState::eq_RGB = b.op;
-			glBlendEquationSeparate(b.op, GL_FUNC_ADD);
+			glBlendEquationSeparateiARB(0, b.op, GL_FUNC_ADD);
 		}
 
 		if (GLState::f_sRGB != b.src || GLState::f_dRGB != b.dst) {
 			GLState::f_sRGB = b.src;
 			GLState::f_dRGB = b.dst;
-			glBlendFuncSeparate(b.src, b.dst, GL_ONE, GL_ZERO);
+
+			// Catalyst legacy 2015 and older doesn't like the new SSO partial workaround so let's use the old workaround to get a partially working gl render.
+			// Some elements are semi transparent but it's better than having a white screen.
+			uint16 src = b.src;
+			uint16 dst = b.dst;
+			if (GLLoader::amd_legacy_buggy_driver) {
+				if (src == GL_SRC1_ALPHA)
+					src = GL_SRC_ALPHA;
+				else if (src == GL_ONE_MINUS_SRC1_ALPHA)
+					src = GL_ONE_MINUS_SRC_ALPHA;
+
+				if (dst == GL_SRC1_ALPHA)
+					dst = GL_SRC_ALPHA;
+				else if (dst == GL_ONE_MINUS_SRC1_ALPHA)
+					dst = GL_ONE_MINUS_SRC_ALPHA;
+			}
+			glBlendFuncSeparateiARB(0, src, dst, GL_ONE, GL_ZERO);
 		}
 
 	} else {

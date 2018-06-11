@@ -342,18 +342,15 @@ namespace GLLoader {
 		// Name changed but driver is still bad!
 		if (strstr(vendor, "Advanced Micro Devices") || strstr(vendor, "ATI Technologies Inc.") || strstr(vendor, "ATI"))
 			vendor_id_amd = true;
-		/*if (vendor_id_amd && (
-				strstr((const char*)&s[v], " 10.") || // Blacklist all 2010 AMD drivers.
-				strstr((const char*)&s[v], " 11.") || // Blacklist all 2011 AMD drivers.
-				strstr((const char*)&s[v], " 12.") || // Blacklist all 2012 AMD drivers.
-				strstr((const char*)&s[v], " 13.") || // Blacklist all 2013 AMD drivers.
-				strstr((const char*)&s[v], " 14.") || // Blacklist all 2014 AMD drivers.
-				strstr((const char*)&s[v], " 15.") || // Blacklist all 2015 AMD drivers.
-				strstr((const char*)&s[v], " 16.") || // Blacklist all 2016 AMD drivers.
-				strstr((const char*)&s[v], " 17.") // Blacklist all 2017 AMD drivers for now.
-				))
+		if (vendor_id_amd && (
+			// Idea is to also have a working 2015 legacy driver so while we are at it why not blacklist older versions just in case.
+			// This should affect only Catalyst drivers.
+			strstr((const char*)&s[v], "atiumdag") ||
+			strstr((const char*)&s[v], "14.") ||
+			strstr((const char*)&s[v], "15.")))
+
 			amd_legacy_buggy_driver = true;
-		*/
+
 		if (strstr(vendor, "NVIDIA Corporation"))
 			vendor_id_nvidia = true;
 
@@ -365,7 +362,7 @@ namespace GLLoader {
 		mesa_driver = !vendor_id_nvidia && !vendor_id_amd;
 #endif
 
-		buggy_sso_dual_src = vendor_id_intel || vendor_id_amd /*|| amd_legacy_buggy_driver*/;
+		buggy_sso_dual_src = vendor_id_intel || vendor_id_amd && !amd_legacy_buggy_driver;
 
 		if (theApp.GetConfigI("override_geometry_shader") != -1) {
 			found_geometry_shader = theApp.GetConfigB("override_geometry_shader");
